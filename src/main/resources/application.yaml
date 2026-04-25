@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: gym-client-service
+  r2dbc:
+    url: r2dbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:gym_db}
+    username: ${DB_USER:gym_user}
+    password: ${DB_PASS:gym_pass}
+    pool:
+      initial-size: 10
+      max-size: 20
+
+server:
+  port: ${PORT:8080}
