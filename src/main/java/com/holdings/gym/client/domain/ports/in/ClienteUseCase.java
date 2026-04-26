@@ -14,8 +14,8 @@ public interface ClienteUseCase {
     CompletableFuture<Cliente> buscarGlobal(String documento);
 
     /**
-     * Crea un cliente globalmente y lo asocia directamente a la empresa indicada.
+     * Crea un cliente globalmente.
      */
-    CompletableFuture<Cliente> registrarClienteGlobalYEmpresa(Cliente cliente, UUID empresaId);
+    CompletableFuture<Cliente> registrarClienteGlobal(Cliente cliente);
     
 }

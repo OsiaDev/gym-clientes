@@ -22,7 +22,7 @@ public class ClienteController {
 
     private final ClienteUseCase clienteUseCase;
 
-    @GetMapping("/{documento}")
+    @GetMapping("buscar-documento/{documento}")
     public CompletableFuture<ResponseEntity<Cliente>> buscarCliente(
             @PathVariable String documento) {
         log.info("Petición recibida para buscar cliente global por documento: {}", documento);
@@ -38,16 +38,15 @@ public class ClienteController {
                 });
     }
 
-    @PostMapping
+    @PostMapping("crear")
     public CompletableFuture<ResponseEntity<Cliente>> registrarCliente(
-            @RequestBody Cliente cliente,
-            @RequestParam UUID empresaId) {
-        log.info("Petición para registrar nuevo cliente global. Documento: {}, EmpresaId: {}", 
-                cliente.getDocumentoCliente(), empresaId);
+            @RequestBody Cliente cliente) {
+        log.info("Petición para registrar nuevo cliente global. Documento: {}",
+                cliente.getDocumentoCliente());
         
-        return clienteUseCase.registrarClienteGlobalYEmpresa(cliente, empresaId)
+        return clienteUseCase.registrarClienteGlobal(cliente)
                 .thenApply(c -> {
-                    log.info("Cliente registrado con éxito globalmente y asociado a la empresa. UUID: {}", c.getUuidCliente());
+                    log.info("Cliente registrado con éxito globalmente. UUID: {}", c.getUuidCliente());
                     return ResponseEntity.status(HttpStatus.CREATED).body(c);
                 })
                 .exceptionally(ex -> {
