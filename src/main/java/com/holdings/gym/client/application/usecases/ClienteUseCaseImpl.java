@@ -7,6 +7,7 @@ import com.holdings.gym.client.domain.model.exceptions.ClienteNoRegistradoExcept
 import com.holdings.gym.client.domain.ports.in.ClienteUseCase;
 import com.holdings.gym.client.domain.ports.out.ClienteEmpresaRepositoryPort;
 import com.holdings.gym.client.domain.ports.out.ClienteRepositoryPort;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +17,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
+@Slf4j
 @Service
 public class ClienteUseCaseImpl implements ClienteUseCase {
 
@@ -33,31 +35,22 @@ public class ClienteUseCaseImpl implements ClienteUseCase {
     }
 
     @Override
-    public CompletableFuture<Cliente> buscarOPermitirRegistro(String documento, UUID empresaId) {
+    public CompletableFuture<Cliente> buscarGlobal(String documento) {
         return CompletableFuture.supplyAsync(() -> {
-            Cliente cliente = clienteRepository.findByDocumento(documento).join()
-                    .orElseThrow(() -> new ClienteNoRegistradoException("El cliente con el documento " + documento + " no se encuentra registrado globalmente."));
-
-            Optional<ClienteEmpresa> ceOpt = clienteEmpresaRepository
-                    .findByUuidClienteAndUuidEmpresa(cliente.getUuidCliente(), empresaId).join();
-
-            if (ceOpt.isEmpty()) {
-                ClienteEmpresa nuevaRelacion = ClienteEmpresa.builder()
-                        .uuidClienteEmpresa(UUID.randomUUID())
-                        .uuidCliente(cliente.getUuidCliente())
-                        .uuidEmpresa(empresaId)
-                        .createdAt(LocalDateTime.now())
-                        .build();
-                clienteEmpresaRepository.save(nuevaRelacion).join();
-            }
-
-            return cliente;
+            log.debug("Iniciando búsqueda global del cliente en el repositorio. Documento: {}", documento);
+            return clienteRepository.findByDocumento(documento).join()
+                    .orElseThrow(() -> {
+                        log.warn("El cliente con documento {} no existe en la base de datos global", documento);
+                        return new ClienteNoRegistradoException("El cliente con el documento " + documento + " no se encuentra registrado globalmente.");
+                    });
         }, domainExecutor);
     }
 
     @Override
     public CompletableFuture<Cliente> registrarClienteGlobalYEmpresa(Cliente cliente, UUID empresaId) {
         return CompletableFuture.supplyAsync(() -> {
+            log.info("Iniciando flujo de registro global para cliente: {} {}", cliente.getNombresCliente(), cliente.getApellidosCliente());
+            
             if (cliente.getUuidCliente() == null) {
                 cliente.setUuidCliente(UUID.randomUUID());
             }
@@ -68,17 +61,23 @@ public class ClienteUseCaseImpl implements ClienteUseCase {
                 cliente.setEstadoCliente(true);
             }
 
+            log.debug("Guardando cliente en repositorio global...");
             Cliente guardado = clienteRepository.save(cliente).join();
+            log.info("Cliente guardado globalmente con UUID: {}", guardado.getUuidCliente());
 
+            log.debug("Asociando cliente {} a la empresa {}", guardado.getUuidCliente(), empresaId);
             ClienteEmpresa nuevaRelacion = ClienteEmpresa.builder()
                     .uuidClienteEmpresa(UUID.randomUUID())
                     .uuidCliente(guardado.getUuidCliente())
                     .uuidEmpresa(empresaId)
                     .createdAt(LocalDateTime.now())
                     .build();
+            
             clienteEmpresaRepository.save(nuevaRelacion).join();
+            log.info("Relación Cliente-Empresa creada con éxito para empresa: {}", empresaId);
 
             return guardado;
         }, domainExecutor);
     }
+    
 }

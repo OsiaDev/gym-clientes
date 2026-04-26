@@ -8,14 +8,14 @@ import java.util.concurrent.CompletableFuture;
 public interface ClienteUseCase {
     
     /**
-     * Busca un cliente por documento. Si existe, verifica que esté asociado al Gimnasio (Empresa),
-     * si no lo está, lo asocia automáticamente.
-     * Si no existe globalmente, lanza ClienteNoRegistradoException.
+     * Busca un cliente globalmente por su documento.
+     * Si no existe, lanza ClienteNoRegistradoException.
      */
-    CompletableFuture<Cliente> buscarOPermitirRegistro(String documento, UUID empresaId);
+    CompletableFuture<Cliente> buscarGlobal(String documento);
 
     /**
      * Crea un cliente globalmente y lo asocia directamente a la empresa indicada.
      */
     CompletableFuture<Cliente> registrarClienteGlobalYEmpresa(Cliente cliente, UUID empresaId);
+    
 }

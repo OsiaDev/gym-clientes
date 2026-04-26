@@ -8,6 +8,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
+import com.holdings.gym.client.domain.model.TipoDocumento;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -17,11 +19,15 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ClienteEntity {
+    
     @Id
     @Column("uuidcliente")
     private UUID uuidCliente;
 
-    @Column("documentocliente")
+    @Column("tipo_documento")
+    private TipoDocumento tipoDocumento;
+
+    @Column("numero_identificacion")
     private String documentoCliente;
 
     @Column("nombrescliente")
@@ -41,4 +47,5 @@ public class ClienteEntity {
 
     @Column("created_at")
     private LocalDateTime createdAt;
+
 }

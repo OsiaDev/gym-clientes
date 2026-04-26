@@ -14,6 +14,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class Cliente {
     private UUID uuidCliente;
+    private TipoDocumento tipoDocumento;
     private String documentoCliente;
     private String nombresCliente;
     private String apellidosCliente;

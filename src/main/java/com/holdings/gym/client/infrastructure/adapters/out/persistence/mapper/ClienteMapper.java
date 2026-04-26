@@ -11,6 +11,7 @@ public class ClienteMapper {
         if (entity == null) return null;
         return Cliente.builder()
                 .uuidCliente(entity.getUuidCliente())
+                .tipoDocumento(entity.getTipoDocumento())
                 .documentoCliente(entity.getDocumentoCliente())
                 .nombresCliente(entity.getNombresCliente())
                 .apellidosCliente(entity.getApellidosCliente())
@@ -25,6 +26,7 @@ public class ClienteMapper {
         if (domain == null) return null;
         return ClienteEntity.builder()
                 .uuidCliente(domain.getUuidCliente())
+                .tipoDocumento(domain.getTipoDocumento())
                 .documentoCliente(domain.getDocumentoCliente())
                 .nombresCliente(domain.getNombresCliente())
                 .apellidosCliente(domain.getApellidosCliente())
@@ -34,4 +36,5 @@ public class ClienteMapper {
                 .createdAt(domain.getCreatedAt())
                 .build();
     }
+    
 }
