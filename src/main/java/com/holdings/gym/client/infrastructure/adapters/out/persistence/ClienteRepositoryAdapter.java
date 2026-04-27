@@ -2,12 +2,14 @@ package com.holdings.gym.client.infrastructure.adapters.out.persistence;
 
 import com.holdings.gym.client.domain.model.Cliente;
 import com.holdings.gym.client.domain.ports.out.ClienteRepositoryPort;
+import com.holdings.gym.client.infrastructure.adapters.out.persistence.entity.ClienteEntity;
 import com.holdings.gym.client.infrastructure.adapters.out.persistence.mapper.ClienteMapper;
 import com.holdings.gym.client.infrastructure.adapters.out.persistence.repository.ClienteRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -22,10 +24,15 @@ public class ClienteRepositoryAdapter implements ClienteRepositoryPort {
 
     @Override
     public CompletableFuture<Cliente> save(Cliente cliente) {
-        log.debug("Ejecutando guardado de cliente en BD: {}", cliente.getDocumentoCliente());
-        return repository.save(mapper.toEntity(cliente))
+        ClienteEntity entity = mapper.toEntity(cliente);
+        log.debug("Ejecutando guardado de cliente en BD: {}", entity.getDocumentoCliente());
+        return repository.insertCliente(entity)
+                .flatMap(rows -> repository.findById(entity.getUuidCliente()))
                 .map(mapper::toDomain)
-                .doOnSuccess(c -> log.debug("Guardado exitoso en BD para cliente: {}", c.getUuidCliente()))
+                .doOnSuccess(c -> {
+                    assert c != null;
+                    log.debug("Guardado exitoso en BD para cliente: {}", c.getUuidCliente());
+                })
                 .doOnError(e -> log.error("Error al guardar cliente en BD: {}", e.getMessage()))
                 .toFuture();
     }
@@ -48,7 +55,7 @@ public class ClienteRepositoryAdapter implements ClienteRepositoryPort {
                 .doOnNext(c -> log.debug("Cliente encontrado en BD: {}", documento))
                 .defaultIfEmpty(Optional.empty())
                 .doOnSuccess(opt -> {
-                    if (opt.isEmpty()) {
+                    if (Objects.requireNonNull(opt).isEmpty()) {
                         log.debug("No se encontró ningún cliente en BD con documento: {}", documento);
                     }
                 })

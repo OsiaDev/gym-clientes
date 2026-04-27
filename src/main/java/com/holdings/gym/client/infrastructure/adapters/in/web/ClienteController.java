@@ -38,7 +38,7 @@ public class ClienteController {
                 });
     }
 
-    @PostMapping("crear")
+    @PostMapping
     public CompletableFuture<ResponseEntity<Cliente>> registrarCliente(
             @RequestBody Cliente cliente) {
         log.info("Petición para registrar nuevo cliente global. Documento: {}",
